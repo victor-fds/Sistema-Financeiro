@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="V:\Trabalhos\Projeto de Estágio\Projeto de Protótipo\Protótipo de Estágio.clpprj">
+	<settings><PM_URL><![CDATA[http://localhost/estagio]]></PM_URL><PM_HOME_URL><![CDATA[http://localhost/estagio]]></PM_HOME_URL><PM_LIBS><![CDATA[]]></PM_LIBS><PM_FTP_CONNECTION><![CDATA[]]></PM_FTP_CONNECTION><PM_FTP_DIR><![CDATA[]]></PM_FTP_DIR><PM_FTP_UPLOAD_ON_SAVE><![CDATA[INT:0]]></PM_FTP_UPLOAD_ON_SAVE></settings><removed value=";"/><added value=""/><lastopfiles>
+		<file name="V:\Trabalhos\Projeto de Estágio\Projeto de Protótipo\private\bean\Fornecedor.php"/>
+	</lastopfiles>
+	<todoblock>
+	</todoblock>
+	<filescache>
+		<file name="V:\Trabalhos\Projeto de Estágio\Projeto de Protótipo\private\bean\Fornecedor.php" crc="1559775671"/>
+		<file name="V:\Trabalhos\Projeto de Estágio\Projeto de Protótipo\private\bean\Endereco.php" crc="1559775343"/>
+		<file name="V:\Trabalhos\Projeto de Estágio\Projeto de Protótipo\private\bean\Cliente.php" crc="1559775104"/>
+	</filescache>
+</project>
