@@ -9,5 +9,5 @@
     define("MODULOS", PVT.DS."modulos".DS);
     define("TPL", PVT.DS."template".DS);
     define("TPLA", PVT.DS."template".DS."admin".DS);
-    
+    define("TPLCAD", PVT.DS."template".DS."cad".DS);
     

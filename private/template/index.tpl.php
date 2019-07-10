@@ -1,1 +1,3 @@
-<p>Página inicial</p>
+<div class="container">
+
+</div>
