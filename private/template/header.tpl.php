@@ -4,7 +4,6 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="stylesheet" href="css/bootstrap.min.css" />
-        <script src="js/main.js"></script>
         <title>SisFin</title>
     </head>
     
@@ -34,9 +33,9 @@
 							<div class="dropdown-menu">
 								<a class="dropdown-item" href="?page=cadclientes">1 - Clientes</a>
 								<a class="dropdown-item" href="?page=cadfornecedores">2 - Fornecedores</a>
-								<a class="dropdown-item" href="#">3 - Editoras</a>
-								<a class="dropdown-item" href="#">4 - Vendedores</a>
-								<a class="dropdown-item" href="#">5 - Transportadoras</a>
+								<a class="dropdown-item" href="?page=cadeditoras">3 - Editoras</a>
+								<a class="dropdown-item" href="?page=cadvendedores">4 - Vendedores</a>
+								<a class="dropdown-item" href="?page=cadtransportadoras">5 - Transportadoras</a>
 								<a class="dropdown-item" href="#">6 - Plano de Pagamento</a>
 								<a class="dropdown-item" href="#">7 - Etiquetar Cliente</a>
 								<a class="dropdown-item" href="#">8 - Parâmetros</a>

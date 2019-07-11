@@ -2,43 +2,138 @@
 
 class Cliente{
     private $cod;
-    private $tipoPessoa;
-    private $cpf;
+    private $tipoPessoa; #TODO: Tipo pessoa
+    private $doc;
     private $nome;
-    private $endereco;
-    private $end_entrega;
     private $rg;
     private $telefone;
+    private $celular;
     private $fax;
-    private $especialidade;
-    private $no_consorcio;
     private $observacao;
     private $contato;
     private $email;
+    private $inscricao_estadual;
+    private $inscricao_municipal;
     private $mala_direta;
+    private $bd;
+     
+    public function __construct($tipoPessoa=null, $doc=null, $nome=null, $rg=null, $telefone=null, $celular=null, $fax=null, $obs=null, $contato=null, $email=null, $inscest=null, $inscmun=null, $mala=null, $id=null){
+        #TODO: Endereço
+        $this->bd = new Banco_De_Dados();
+        $this->tipoPessoa = $tipoPessoa;
+        $this->doc = $doc;
+        $this->nome = $nome;
+        $this->rg = $rg;
+        $this->telefone = $telefone;
+        $this->celular = $celular;
+        $this->fax = $fax;
+        $this->observacao = $obs;
+        $this->contato = $contato;
+        $this->email = $email;
+        $this->inscricao_estadual = $inscest;
+        $this->inscricao_municipal = $inscmun;
+        $this->mala_direta = $mala;
+        $this->id = $id;
+    }
+    
+    public function buscarEndereco(){
+        if($this->id > 0){
+            if(DEBUG && Config::$log_lvl > 1) logMsg("Tentativa de buscar endereço do cliente: '".$this->id."'");
+            
+            $result = $this->bd->select("*", TB_ENDERECO, " WHERE id_usr=?", array($this->id));
+            
+            if(!empty($result) && $result->rowCount() > 0){
+                return $result->fetchAll();
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    public function buscar($busca, $tipo=1){
+        if(DEBUG && Config::$log_lvl > 1) logMsg("Tentativa de busca por cliente: '$busca'");
+        
+        if($tipo == 1)
+            $result = $this->bd->select("*", TB_CLIENTE, " WHERE id=? LIMIT 1;", array($busca));
+        else 
+            $result = $this->bd->select("*", TB_CLIENTE, " WHERE nome LIKE '%$busca%' ORDER BY id ASC LIMIT 1;", array());
 
-    function getCod() {
-        return $this->cod;
+        if(!is_array($result) && $result->rowCount() > 0){
+            $result = $result->fetchObject();
+            $this->__construct($result->tipo_pessoa, $result->doc, $result->nome, $result->rg, $result->telefone, $result->celular, $result->fax, $result->observacao, $result->contato, $result->email, $result->insc_est, $result->insc_mun, $result->mala_direta, $result->id);
+            return true;
+        } else
+            return false;
+    }
+    
+    public function consultar(){
+        if(isset($this->nome)){            
+            $erros['doc'] = $this->bd->select("doc", TB_CLIENTE, " WHERE doc=?;", array($this->doc));
+            $erros['email'] = $this->bd->select("email", TB_CLIENTE, " WHERE email=?;", array($this->email));
+            return $erros;
+        } else {
+            logMsg("Tentativa de consultar, sem inicializar a classe: Cliente");
+            return false;
+        }
+    }
+    
+    public function cadastrar(){
+        if(isset($this->nome)){
+            $erros = $this->consultar();
+            if(!empty($erros['doc']) || !empty($erros['email'])){
+                if(DEBUG && Config::$log_lvl > 1) logMsg("Tentativa de cadastrar um cliente com falha");
+                return $erros;
+            }
+               
+            $result = $this->bd->insert(TB_CLIENTE, "id=default, tipo_pessoa=?, doc=?, nome=?, rg=?, telefone=?, celular=?, fax=?, observacao=?, contato=?, email=?, insc_est=?, insc_mun=?, mala_direta=?", array($this->tipoPessoa, $this->doc, $this->nome, $this->rg, $this->telefone, $this->celular, $this->fax, $this->observacao, $this->contato, $this->email, $this->inscricao_estadual, $this->inscricao_municipal, $this->mala_direta));
+            if(DEBUG) logMsg("Cadastrado um novo cliente id:". $result);
+            
+            return $result;
+            
+        } else {
+            logMsg("Tentativa de cadastrar, sem inicializar a classe: Cliente");
+            return false;
+        }
+    }
+   
+    function getInscricao_estadual() {
+        return $this->inscricao_estadual;
+    }
+
+    function getInscricao_municipal() {
+        return $this->inscricao_municipal;
+    }
+
+    function setInscricao_estadual($inscricao_estadual) {
+        $this->inscricao_estadual = $inscricao_estadual;
+    }
+
+    function setInscricao_municipal($inscricao_municipal) {
+        $this->inscricao_municipal = $inscricao_municipal;
+    }
+    
+    function getCelular() {
+        return $this->celular;
+    }
+
+    function setCelular($celular) {
+        $this->celular = $celular;
+    }
+  
+    function getId() {
+        return $this->id;
     }
 
     function getTipoPessoa() {
         return $this->tipoPessoa;
     }
 
-    function getCpf() {
-        return $this->cpf;
+    function getDoc() {
+        return $this->doc;
     }
 
     function getNome() {
         return $this->nome;
-    }
-
-    function getEndereco() {
-        return $this->endereco;
-    }
-
-    function getEnd_entrega() {
-        return $this->end_entrega;
     }
 
     function getRg() {
@@ -51,14 +146,6 @@ class Cliente{
 
     function getFax() {
         return $this->fax;
-    }
-
-    function getEspecialidade() {
-        return $this->especialidade;
-    }
-
-    function getNo_consorcio() {
-        return $this->no_consorcio;
     }
 
     function getObservacao() {
@@ -77,28 +164,20 @@ class Cliente{
         return $this->mala_direta;
     }
 
-    function setCod($cod) {
-        $this->cod = $cod;
+    function setId($id) {
+        $this->cod = $id;
     }
 
     function setTipoPessoa($tipoPessoa) {
         $this->tipoPessoa = $tipoPessoa;
     }
 
-    function setCpf($cpf) {
-        $this->cpf = $cpf;
+    function setDoc($doc) {
+        $this->cpf = $doc;
     }
 
     function setNome($nome) {
         $this->nome = $nome;
-    }
-
-    function setEndereco($endereco) {
-        $this->endereco = $endereco;
-    }
-
-    function setEnd_entrega($end_entrega) {
-        $this->end_entrega = $end_entrega;
     }
 
     function setRg($rg) {
@@ -111,14 +190,6 @@ class Cliente{
 
     function setFax($fax) {
         $this->fax = $fax;
-    }
-
-    function setEspecialidade($especialidade) {
-        $this->especialidade = $especialidade;
-    }
-
-    function setNo_consorcio($no_consorcio) {
-        $this->no_consorcio = $no_consorcio;
     }
 
     function setObservacao($observacao) {

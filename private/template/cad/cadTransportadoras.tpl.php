@@ -1,5 +1,5 @@
 <div class="container">
-    <h3 class="mt-3 text-center">Cadastro de fornecedores</h3>
+    <h3 class="mt-3 text-center">Cadastro de transportadoras</h3>
     <div class="row">
         <div class="col-12">
             <form class="form-inline mt-4 mb-2" method="post" action="?page=cadclientes&op=pesquisa">
@@ -25,21 +25,6 @@
                     </div>
                 </div>
                 
-                <div class="form-row">
-                    <div class="col-md-3">
-                        <label for="celular">Celular</label>
-                        <input type="text" class="form-control" maxlength="15" id="celular" name="celular">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="telefone">Telefone</label>
-                        <input type="text" class="form-control" maxlength="15" id="telefone" name="telefone">
-                    </div>
-                    <div class="col-md-2 ml-auto">
-                        <label for="fax">FAX</label>
-                        <input type="text" class="form-control" maxlength="15" id="fax" name="fax">
-                    </div>
-                </div>
-                
                 <div class="form-row mt-3 mb-2">
                     <div class="col-md-5">
                         <label for="inscestadual">Inscrição Estadual</label>
@@ -51,36 +36,13 @@
                     </div>
                 </div>
                 
-                <div class="form-row">
-                    <div class="col-md-7">
-                        <label for="contato">Contato</label>
-                        <input type="text" class="form-control" maxlength="50" id="contato" name="contato">
-                    </div>
-                    <div class="col-md-5">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" maxlength="100" id="email" name="email">
-                    </div>
-                </div>
-                
                 <h5 class="mt-5">Endereço empresarial</h5>
-                <div class="form-row">
-                    <div class="col-md-4">
-                        <label for="cep">CEP</label>
-                        <input type="text" class="form-control is-valid" maxlength="9" id="cep" name="cep">
-                    </div>
-                    <div class="col-md-4 ml-auto">
-                        <label for="codmun">Cód. de Município do IBGE</label>
-                        <input type="text" class="form-control" maxlength="9" id="codmun" name="codmun">
-                        <div class="small text-muted">Nome do município - UF</div>
-                    </div>
-                </div>
-
                 <div class="form-row mt-2">
-                    <div class="form-group col-md-9">
+                    <div class="form-group col-md-11">
                         <label for="endereco">Endereço</label>
                         <input type="text" class="form-control" maxlength="40" id="endereco" name="endereco">
                     </div>
-                    <div class="form-group col-md-3">
+                    <div class="form-group col-md-1">
                         <label for="nro">Nro</label>
                         <input type="text" class="form-control" maxlength="5" id="nro" name="nro">
                     </div>
@@ -90,10 +52,6 @@
                     <div class="form-group col-md-4">
                         <label for="complemento">Complemento</label>
                         <input type="text" class="form-control" maxlength="20" id="complemento" name="complemento">
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label for="bairro">Bairro</label>
-                        <input type="text" class="form-control" maxlength="40" id="bairro" name="bairro">
                     </div>
                     <div class="form-group col-md-4">
                         <label for="cidade">Cidade</label>

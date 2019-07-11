@@ -3,6 +3,7 @@
 class Editora{
     private $cod;
     private $nome;
+    private $cnpj;
     private $nome_reduzido;
     private $endereco;
     private $margem;
@@ -15,6 +16,14 @@ class Editora{
         return $this->nome;
     }
 
+    function getCnpj() {
+        return $this->cnpj;
+    }
+
+    function setCnpj($cnpj) {
+        $this->cnpj = $cnpj;
+    }
+    
     function getNome_reduzido() {
         return $this->nome_reduzido;
     }

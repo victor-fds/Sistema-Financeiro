@@ -1,10 +1,133 @@
+<?php
+    $cadastro = false;
+    $erros = null;
+    $cli;
+    
+    if($_GET['op'] === "form" && isset($_POST['enviar'])){
+        #formulário foi enviado
+        $doc = filter_var($_POST['doc'], FILTER_SANITIZE_STRING);
+            if(empty($doc))
+                $erros[] = "Não foi possível certificar o documento.";
+            
+        $nome = filter_var($_POST['nome'], FILTER_SANITIZE_STRING);
+            if(empty($nome))
+                $erros[] = "Não foi possível certificar o nome.";
+            
+        $rg = filter_var($_POST['rg'], FILTER_SANITIZE_STRING);
+            if(empty($rg))
+                $rg = "INDEFINIDO";
+            
+        $tel = filter_var($_POST['telefone'], FILTER_SANITIZE_STRING);       
+        $cel = filter_var($_POST['celular'], FILTER_SANITIZE_STRING);
+            if(empty($cel) && empty($tel))
+                $erros[] = "Digite ao menos um celular ou telefone.";
+            
+        $fax = filter_var($_POST['fax'], FILTER_SANITIZE_STRING);
+            if(empty($fax))
+                $fax = "SEM FAX";
+            
+        $insest = filter_var($_POST['inscestadual'], FILTER_SANITIZE_STRING);
+        $insmun = filter_var($_POST['inscmunicipal'], FILTER_SANITIZE_STRING);
+        if(empty($insmun) && empty(insest))
+            $erros[] = "Obrigatório mencionar pelo menos um tipo de inscrição para empresas.";
+        else{
+            if(empty($insest))
+                $insest = "ISENTO";
+            if(empty($insmun))
+                $insmun = "ISENTO";
+        }
+            
+        $contato = filter_var($_POST['contato'], FILTER_SANITIZE_STRING);
+            if(empty($contato))
+                $contato = "INDEFINIDO";
+            
+        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+            if(empty($email))
+                $erros[] = "Digite um e-mail válido.";
+            
+        $obs = filter_var($_POST['observacao'], FILTER_SANITIZE_STRING);
+            if(empty($obs))
+                $obs = "SEM OBSERVAÇÕES";
+            
+        if($_POST['maladireta'] === "on")
+            $mala = 1;
+        else 
+            $mala = 0;
+            
+        if($_POST['estrangeiro'] === "on")
+            $estrangeiro = 1;
+        else 
+            $estrangeiro = 0;
+            
+        $tipo = $estrangeiro; #fisica, juridica ou estrangeiro
+       
+        if(!isset($erros)){
+            $cli = new Cliente($tipo, $doc, $nome, $rg, $tel, $cel, $fax, $obs, $contato, $email, $insest, $insmun, $mala);
+            $result = $cli->cadastrar();
+            
+            if(is_numeric($result) && $result > 0){
+                echo "<p class=\"text-center cd-erro\">Cliente $nome cadastrado no banco de dados!<br></p>";
+                  
+                $cadastro = true;
+                $_POST['busca'] = $result;
+                $cli->setId($result);
+                
+            } else {
+                if($result['doc'] != false)
+                    echo "<p class=\"text-center cd-erro\">Já existe um cliente com o doc: $doc cadastrado!<br></p>";
+                
+                if($result['email'] != false)
+                    echo "<p class=\"text-center cd-erro\">Já existe um cliente com o email: $email cadastrado!<br></p>";
+            }
+            
+        } else {
+            foreach($erros as $erro)
+                echo "<p class=\"text-center cd-erro\">$erro<br></p>";
+        }
+    }
+    
+    #------------- FIM DO FORMULÁRIO -----------
+    
+    if($_GET['op'] === "pesquisa" && isset($_POST['enviar'])){
+        #enviado formulário de pesquisa
+        $cli = new Cliente();
+        $tipo;
+        
+        if(is_numeric($_POST['busca'])){
+            $busca = filter_var($_POST['busca'], FILTER_SANITIZE_NUMBER_INT);
+            $tipo=1;
+        } else {
+            $busca = filter_var($_POST['busca'], FILTER_SANITIZE_STRING);
+            $tipo=2;
+        }
+        
+        if($cli->buscar($busca, $tipo) == true){
+            $_POST['doc'] = $cli->getDoc();
+            $_POST['nome'] = $cli->getNome();
+            $_POST['rg'] = $cli->getRg();
+            $_POST['celular'] = $cli->getCelular();
+            $_POST['telefone'] = $cli->getTelefone();
+            $_POST['fax'] = $cli->getFax();
+            $_POST['inscestadual'] = $cli->getInscricao_estadual();
+            $_POST['inscmunicipal'] = $cli->getInscricao_municipal();
+            $_POST['contato'] = $cli->getContato();
+            $_POST['email'] = $cli->getEmail();
+            $_POST['observacao'] = $cli->getObservacao();
+            $_POST['maladireta'] = $cli->getMala_direta();
+            $_POST['estrangeiro'] = $cli->getTipoPessoa();
+        } else
+            echo "<p class=\"text-center cd-erro\">Não foi encontrado nenhum cliente com a busca: $busca<br></p>";
+    }
+?>
+
 <div class="container">
+    <h3 class="mt-3 text-center">Cadastro de clientes</h3>
     <div class="row">
         <div class="col-12">
             <form class="form-inline mt-4 mb-2" method="post" action="?page=cadclientes&op=pesquisa">
                 <label for="busca" class="mr-2">Buscar: </label>
-                <input type="text" placeholder="Nome ou código do cliente" name="busca" id="busca" class="form-control mr-2">
-                <input type="submit" value="Buscar" class="btn btn-warning" name="enviar">
+                <input type="text" placeholder="Nome ou código do cliente" name="busca" value="<?=$_POST['busca'];?>" id="busca" class="form-control mr-2">
+                <input type="submit" value="Buscar" class="btn btn-warning" name="enviar" id="buscar">
             </form>
         </div>
     </div>
@@ -16,69 +139,86 @@
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label for="doc">CPF, CNPJ ou Passaporte</label>
-                        <input type="text" class="form-control" maxlength="16" id="doc" name="doc">
+                        <input type="text" class="form-control" maxlength="16" id="doc" name="doc" value="<?=$_POST['doc'];?>" required>
                     </div>
                     <div class="form-group col-md-9">
                         <label for="nome">Nome</label>
-                        <input type="text" class="form-control" maxlength="90" id="nome" name="nome">
+                        <input type="text" class="form-control" maxlength="90" id="nome" name="nome" value="<?=$_POST['nome'];?>" required>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="col-md-3">
+                        <label for="rg">RG</label>
+                        <input type="text" class="form-control" maxlength="15" id="rg" name="rg" value="<?=$_POST['rg'];?>">
+                    </div>
+                    <div class="col-md-3">
                         <label for="celular">Celular</label>
-                        <input type="text" class="form-control" maxlength="15" id="celular" name="celular">
+                        <input type="text" class="form-control" maxlength="15" id="celular" name="celular" value="<?=$_POST['celular'];?>">
                     </div>
                     <div class="col-md-3">
                         <label for="telefone">Telefone</label>
-                        <input type="text" class="form-control" maxlength="15" id="telefone" name="telefone">
+                        <input type="text" class="form-control" maxlength="15" id="telefone" name="telefone" value="<?=$_POST['telefone'];?>">
                     </div>
                     <div class="col-md-2 ml-auto">
                         <label for="fax">FAX</label>
-                        <input type="text" class="form-control" maxlength="15" id="fax" name="fax">
+                        <input type="text" class="form-control" maxlength="15" id="fax" name="fax" value="<?=$_POST['fax'];?>">
                     </div>
                 </div>
                 
                 <div class="form-row mt-3 mb-2">
                     <div class="col-md-5">
                         <label for="inscestadual">Inscrição Estadual</label>
-                        <input type="text" class="form-control" maxlength="15" id="inscestadual" name="inscestadual">
+                        <input type="text" class="form-control" maxlength="15" id="inscestadual" name="inscestadual" value="<?=$_POST['inscestadual'];?>">
                     </div>
                     <div class="col-md-5 ml-auto">
                         <label for="inscmunicipal">Inscrição Municipal</label>
-                        <input type="text" class="form-control" maxlength="15" id="inscmunicipal" name="inscmunicipal">
+                        <input type="text" class="form-control" maxlength="15" id="inscmunicipal" name="inscmunicipal" value="<?=$_POST['inscmunicipal'];?>">
                     </div>
                 </div>
                 
                 <div class="form-row">
-                    <div class="col-md-7">
+                    <div class="col-md-4">
                         <label for="contato">Contato</label>
-                        <input type="text" class="form-control" maxlength="50" id="contato" name="contato">
+                        <input type="text" class="form-control" maxlength="50" id="contato" name="contato" value="<?=$_POST['contato'];?>">
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label for="email">Email</label>
-                        <input type="email" class="form-control" maxlength="100" id="email" name="email">
+                        <input type="email" class="form-control" maxlength="100" id="email" name="email" value="<?=$_POST['email'];?>" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="observacao">Observação</label>
+                        <input type="text" class="form-control" maxlength="100" id="observacao" name="observacao" value="<?=$_POST['observacao'];?>">
                     </div>
                 </div>
                 
                 <div class="form-group mt-3 form-inline">
                     <div class="form-check mr-3">
-                        <input type="checkbox" class="form-check-input" id="maladireta">
+                        <input type="checkbox" class="form-check-input" <?php if(!empty($_POST['maladireta'])) echo "checked"; ?> id="maladireta" name="maladireta">
                         <label class="form-check-label" for="maladireta">Mala direta</label>
                     </div>
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="estrangeiro">
+                        <input type="checkbox" class="form-check-input" <?php if(!empty($_POST['estrangeiro'])) echo "checked"; ?> id="estrangeiro" name="estrangeiro">
                         <label class="form-check-label" for="estrangeiro">Estrangeiro</label>
                     </div>
                 </div>
                 
                 <div class="form-row">
-                    <input type="submit" class="btn btn-warning mr-3" value="Salvar">
-                    <input type="button" class="btn btn-warning mr-3" value="Excluir">
+                    <input type="submit" class="btn btn-warning mr-3" name="enviar" value="Salvar">
+                    <input type="button" class="btn btn-warning mr-3"data-toggle="modal" data-target="#delModal2" value="Excluir">
                 </div>
             </form>
             
             <hr>
+            
+            <?php
+                $end;
+                
+                if((!empty($cli) && $cli->getId() > 0) || $cadastro == true){
+                    $end = $cli->buscarEndereco();
+                } else 
+                    $end = false;
+            ?>
             
             <div class="row">
                 <div class="col-md-6 border-right">
@@ -93,14 +233,24 @@
                             </tr>
                         <a href="#" data-toggle="modal" data-target="#addEndereco">Adicionar novo</a>
                         </thead>
-                      <tbody>
-                        <tr>
-                          <th>1</th>
-                          <td>Exemplo de Rua</td>
-                          <td>330</td>
-                          <td><a href="#"><i class="fas fa-trash"></i></a> | <a href="#"><i class="far fa-edit"></i></a> | <a href="#"><i class="fas fa-check"></i></a></td>
-                        </tr>
-                      </tbody>
+                        <tbody>
+                            <?php
+                            if($end != false){
+                                foreach($end as $endereco){
+                            ?>
+                            <tr>
+                                <th><?=$endereco['id'];?></th>
+                                <td><?=$endereco['endereco'];?></td>
+                                <td><?=$endereco['nro'];?></td>
+                                <td><a href="#" onclick="alteraEndId(<?=$endereco['id'];?>);" data-toggle="modal" data-target="#delModal"><i class="fas fa-trash"></i></a> | <a href="#endereco" data-toggle="modal" data-target="#addEndereco" onclick="alteraEndId(<?=$endereco['id'];?>);" data-cep="<?=$endereco['cep'];?>" data-codmun="<?=$endereco['cod_mun'];?>" data-endereco="<?=$endereco['endereco'];?>" data-nro="<?=$endereco['nro'];?>" data-complemento="<?=$endereco['complemento'];?>" data-bairro="<?=$endereco['bairro'];?>" data-cidade="<?=$endereco['cidade'];?>" data-uf="<?=$endereco['uf'];?>"><i class="far fa-edit"></i></a> | <a href="#endereco"><i class="fas fa-check"></i></a></td>
+                            </tr>
+                            
+                            <?php 
+                                }
+                            } else 
+                                echo "<tr><th colspan=\"4\">Nenhum endereço cadastrado para o cliente</th></tr>";
+                            ?>
+                        </tbody>
                     </table>
                 </div>
 
@@ -182,8 +332,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-dark">Adicionar Endereço</button>
-                        <button type="button" class="btn" data-dismiss="modal">Fechar</button>
+                        <input type="submit" name="salvarEndereco" id="salvarEndereco" class="btn btn-dark" value="Salvar Endereço">
+                        <input type="button" class="btn" data-dismiss="modal" value="Fechar" >
                     </div>
                 </form>
             </div>
@@ -224,6 +374,46 @@
                     </tr>
                   </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="delModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmação</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+                Você tem certeza que deseja deletar?
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="delEnd();" data-dismiss="modal" class="btn btn-dark">Deletar</button>
+                <button type="button" class="btn" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="delModal2" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmação</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+                Você tem certeza que deseja deletar?
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="delUsuario();" data-dismiss="modal" class="btn btn-dark">Deletar</button>
+                <button type="button" class="btn" data-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>
