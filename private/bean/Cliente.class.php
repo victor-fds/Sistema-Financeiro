@@ -1,7 +1,7 @@
 <?php
 
 class Cliente{
-    private $cod;
+    private $id;
     private $tipoPessoa; #TODO: Tipo pessoa
     private $doc;
     private $nome;
@@ -95,6 +95,79 @@ class Cliente{
             return false;
         }
     }
+    
+    public function editar(){
+        if(isset($this->id)){
+            
+            $result = $this->bd->update(TB_CLIENTE, "tipo_pessoa=?, doc=?, nome=?, rg=?, telefone=?, celular=?, fax=?, observacao=?, contato=?, email=?, insc_est=?, insc_mun=?, mala_direta=? WHERE id=?;", array($this->tipoPessoa, $this->doc, $this->nome, $this->rg, $this->telefone, $this->celular, $this->fax, $this->observacao, $this->contato, $this->email, $this->inscricao_estadual, $this->inscricao_municipal, $this->mala_direta, $this->id));
+            if(Config::$log_lvl > 1) logMsg("Editado o cliente id:". $result);
+            
+            return $result;
+        } else {
+            logMsg("Tentativa de cadastrar, sem inicializar o id classe: Cliente");
+            return false;
+        }
+    }
+    
+    public function validaDados(){
+        $erros=null;
+        
+        $this->doc = filter_var($this->doc, FILTER_SANITIZE_STRING);
+            if(empty($this->doc))
+                $erros[] = "Não foi possível certificar o documento.";
+            
+        $this->nome = filter_var($this->nome, FILTER_SANITIZE_STRING);
+            if(empty($this->nome))
+                $erros[] = "Não foi possível certificar o nome.";
+            
+        $this->rg = filter_var($this->rg, FILTER_SANITIZE_STRING);
+            if(empty($this->rg))
+                $this->rg = "INDEFINIDO";
+            
+        $this->telefone = filter_var($this->telefone, FILTER_SANITIZE_STRING);       
+        $this->celular = filter_var($this->celular, FILTER_SANITIZE_STRING);
+            if(empty($this->celular) && empty($this->telefone))
+                $erros[] = "Digite ao menos um celular ou telefone.";
+            
+        $this->fax = filter_var($this->fax, FILTER_SANITIZE_STRING);
+            if(empty($this->fax))
+                $this->fax = "SEM FAX";
+            
+        $this->inscricao_estadual = filter_var($this->inscricao_estadual, FILTER_SANITIZE_STRING);
+        $this->inscricao_municipal = filter_var($this->inscricao_municipal, FILTER_SANITIZE_STRING);
+        if(empty($this->inscricao_estadual) && empty($this->inscricao_municipal))
+            $erros[] = "Obrigatório mencionar pelo menos um tipo de inscrição para empresas.";
+        else{
+            if(empty($this->inscricao_estadual))
+                $this->inscricao_estadual = "ISENTO";
+            if(empty($this->inscricao_municipal))
+                $this->inscricao_municipal = "ISENTO";
+        }
+            
+        $this->contato = filter_var($this->contato, FILTER_SANITIZE_STRING);
+            if(empty($this->contato))
+                $this->contato = "INDEFINIDO";
+            
+        $this->email = filter_var($this->email, FILTER_SANITIZE_EMAIL);
+            if(empty($this->email))
+                $erros[] = "Digite um e-mail válido.";
+            
+        $this->observacao = filter_var($this->observacao, FILTER_SANITIZE_STRING);
+            if(empty($this->observacao))
+                $this->observacao = "SEM OBSERVAÇÕES";
+            
+        if($this->mala_direta === "on")
+            $this->mala_direta = 1;
+        else 
+            $this->mala_direta = 0;
+            
+        if($this->tipoPessoa === "on")
+            $this->tipoPessoa = 1;
+        else 
+            $this->tipoPessoa = 0;
+        
+        return $erros;
+    }
    
     function getInscricao_estadual() {
         return $this->inscricao_estadual;
@@ -165,7 +238,7 @@ class Cliente{
     }
 
     function setId($id) {
-        $this->cod = $id;
+        $this->id = $id;
     }
 
     function setTipoPessoa($tipoPessoa) {

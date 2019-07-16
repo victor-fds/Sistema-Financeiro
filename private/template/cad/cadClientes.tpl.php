@@ -3,66 +3,12 @@
     $erros = null;
     $cli;
     
-    if($_GET['op'] === "form" && isset($_POST['enviar'])){
+    if($_GET['op'] === "form" && isset($_POST['cadastrar'])){
         #formulário foi enviado
-        $doc = filter_var($_POST['doc'], FILTER_SANITIZE_STRING);
-            if(empty($doc))
-                $erros[] = "Não foi possível certificar o documento.";
-            
-        $nome = filter_var($_POST['nome'], FILTER_SANITIZE_STRING);
-            if(empty($nome))
-                $erros[] = "Não foi possível certificar o nome.";
-            
-        $rg = filter_var($_POST['rg'], FILTER_SANITIZE_STRING);
-            if(empty($rg))
-                $rg = "INDEFINIDO";
-            
-        $tel = filter_var($_POST['telefone'], FILTER_SANITIZE_STRING);       
-        $cel = filter_var($_POST['celular'], FILTER_SANITIZE_STRING);
-            if(empty($cel) && empty($tel))
-                $erros[] = "Digite ao menos um celular ou telefone.";
-            
-        $fax = filter_var($_POST['fax'], FILTER_SANITIZE_STRING);
-            if(empty($fax))
-                $fax = "SEM FAX";
-            
-        $insest = filter_var($_POST['inscestadual'], FILTER_SANITIZE_STRING);
-        $insmun = filter_var($_POST['inscmunicipal'], FILTER_SANITIZE_STRING);
-        if(empty($insmun) && empty(insest))
-            $erros[] = "Obrigatório mencionar pelo menos um tipo de inscrição para empresas.";
-        else{
-            if(empty($insest))
-                $insest = "ISENTO";
-            if(empty($insmun))
-                $insmun = "ISENTO";
-        }
-            
-        $contato = filter_var($_POST['contato'], FILTER_SANITIZE_STRING);
-            if(empty($contato))
-                $contato = "INDEFINIDO";
-            
-        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-            if(empty($email))
-                $erros[] = "Digite um e-mail válido.";
-            
-        $obs = filter_var($_POST['observacao'], FILTER_SANITIZE_STRING);
-            if(empty($obs))
-                $obs = "SEM OBSERVAÇÕES";
-            
-        if($_POST['maladireta'] === "on")
-            $mala = 1;
-        else 
-            $mala = 0;
-            
-        if($_POST['estrangeiro'] === "on")
-            $estrangeiro = 1;
-        else 
-            $estrangeiro = 0;
-            
-        $tipo = $estrangeiro; #fisica, juridica ou estrangeiro
-       
+        $cli = new Cliente($_POST['estrangeiro'], $_POST['doc'], $_POST['nome'], $_POST['rg'], $_POST['telefone'], $_POST['celular'], $_POST['fax'], $_POST['observacao'], $_POST['contato'], $_POST['email'], $_POST['inscestadual'], $_POST['inscmunicipal'], $_POST['maladireta']);
+        $erros = $cli->validaDados();
+        
         if(!isset($erros)){
-            $cli = new Cliente($tipo, $doc, $nome, $rg, $tel, $cel, $fax, $obs, $contato, $email, $insest, $insmun, $mala);
             $result = $cli->cadastrar();
             
             if(is_numeric($result) && $result > 0){
@@ -70,6 +16,7 @@
                   
                 $cadastro = true;
                 $_POST['busca'] = $result;
+                $_POST['userId'] = $result;
                 $cli->setId($result);
                 
             } else {
@@ -86,7 +33,37 @@
         }
     }
     
-    #------------- FIM DO FORMULÁRIO -----------
+    #------------- FIM DO CADASTRAR -----------
+    
+    if(isset($_POST['editar']) && $_GET['op'] === "form"){
+        #formulário foi enviado
+        $cli = new Cliente($_POST['estrangeiro'], $_POST['doc'], $_POST['nome'], $_POST['rg'], $_POST['telefone'], $_POST['celular'], $_POST['fax'], $_POST['observacao'], $_POST['contato'], $_POST['email'], $_POST['inscestadual'], $_POST['inscmunicipal'], $_POST['maladireta']);
+        $erros = $cli->validaDados();
+        
+        $id = filter_var($_POST['userId'], FILTER_SANITIZE_NUMBER_INT);
+       
+        if(!isset($erros) && !empty($id)){
+            $cli->setId($id);
+            $result = $cli->editar();
+            
+            if($result == true){
+                echo "<p class=\"text-center cd-erro\">Cliente $nome alterado no banco de dados!<br></p>";
+                  
+                $cadastro = true;
+                $_POST['busca'] = $cli->getId();
+                $_POST['userId'] = $cli->getId();
+                
+            } else {
+                echo "<p class=\"text-center cd-erro\">Problema desconhecido ao alterar o cliente!<br></p>";
+            }
+            
+        } else {
+            foreach($erros as $erro)
+                echo "<p class=\"text-center cd-erro\">$erro<br></p>";
+        }
+    }
+    
+    #------------- FIM DO EDITAR -------------
     
     if($_GET['op'] === "pesquisa" && isset($_POST['enviar'])){
         #enviado formulário de pesquisa
@@ -102,6 +79,7 @@
         }
         
         if($cli->buscar($busca, $tipo) == true){
+            $_POST['userId'] = $cli->getId();
             $_POST['doc'] = $cli->getDoc();
             $_POST['nome'] = $cli->getNome();
             $_POST['rg'] = $cli->getRg();
@@ -135,6 +113,7 @@
     <div class="row">
         <div class="col-12">
             <form class="form-group mt-3" method="post" action="?page=cadclientes&op=form">
+                <input type="text" name="userId" value="<?=$_POST['userId'];?>" id="userId" hidden="true">
                 <h5>Informações Pessoais</h5>
                 <div class="form-row">
                     <div class="form-group col-md-3">
@@ -204,8 +183,9 @@
                 </div>
                 
                 <div class="form-row">
-                    <input type="submit" class="btn btn-warning mr-3" name="enviar" value="Salvar">
-                    <input type="button" class="btn btn-warning mr-3"data-toggle="modal" data-target="#delModal2" value="Excluir">
+                    <input type="submit" class="btn btn-warning mr-3" name="cadastrar" value="Cadastrar">
+                    <input type="submit" class="btn btn-warning mr-3" name="editar" value="Editar">
+                    <input type="button" class="btn btn-warning mr-3" onclick="alteraUserId(<?=$_POST['userId'];?>);" data-toggle="modal" data-target="#delModal2" value="Excluir">
                 </div>
             </form>
             
@@ -231,7 +211,7 @@
                                 <th scope="col">Nro</th>
                                 <th scope="col">Ações</th>
                             </tr>
-                        <a href="#" data-toggle="modal" data-target="#addEndereco">Adicionar novo</a>
+                        <a href="#" data-toggle="modal" data-target="#addEndereco" onclick="alteraUserId(<?=$cli->getId();?>);">Adicionar novo</a>
                         </thead>
                         <tbody>
                             <?php
@@ -242,7 +222,7 @@
                                 <th><?=$endereco['id'];?></th>
                                 <td><?=$endereco['endereco'];?></td>
                                 <td><?=$endereco['nro'];?></td>
-                                <td><a href="#" onclick="alteraEndId(<?=$endereco['id'];?>);" data-toggle="modal" data-target="#delModal"><i class="fas fa-trash"></i></a> | <a href="#endereco" data-toggle="modal" data-target="#addEndereco" onclick="alteraEndId(<?=$endereco['id'];?>);" data-cep="<?=$endereco['cep'];?>" data-codmun="<?=$endereco['cod_mun'];?>" data-endereco="<?=$endereco['endereco'];?>" data-nro="<?=$endereco['nro'];?>" data-complemento="<?=$endereco['complemento'];?>" data-bairro="<?=$endereco['bairro'];?>" data-cidade="<?=$endereco['cidade'];?>" data-uf="<?=$endereco['uf'];?>"><i class="far fa-edit"></i></a> | <a href="#endereco"><i class="fas fa-check"></i></a></td>
+                                <td><a href="#" onclick="alteraEndId(<?=$endereco['id'];?>);" data-toggle="modal" data-target="#delModal"><i class="fas fa-trash"></i></a> | <a href="#endereco" data-toggle="modal" data-target="#addEndereco" onclick="alteraEndId(<?=$endereco['id'];?>);" data-cep="<?=$endereco['cep'];?>" data-codmun="<?=$endereco['cod_mun'];?>" data-endereco="<?=$endereco['endereco'];?>" data-nro="<?=$endereco['nro'];?>" data-complemento="<?=$endereco['complemento'];?>" data-bairro="<?=$endereco['bairro'];?>" data-cidade="<?=$endereco['cidade'];?>" data-uf="<?=$endereco['uf'];?>" data-value="alterar"><i class="far fa-edit"></i></a> | <a href="#endereco"><i class="fas fa-check"></i></a></td>
                             </tr>
                             
                             <?php 
@@ -418,3 +398,5 @@
         </div>
     </div>
 </div>
+
+<script src="js/main.js"></script>

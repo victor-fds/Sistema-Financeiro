@@ -21,10 +21,10 @@ class Banco_De_Dados
 
             } 
             catch (PDOException $e){
-                if(DEBUG){
-                    logMsg($e->getMessage());
+                if(DEBUG)
                     echo $e->getMessage();
-                }
+                if(Config::$log_lvl > 0 )
+                    logMsg($e->getMessage());
             }
         } else 
             return $this->link;
@@ -41,10 +41,9 @@ class Banco_De_Dados
 
 
     public function insert($tabela, $condicao, $exec){
-        $exe = $this->prepExec("INSERT INTO ".$tabela." SET $condicao;", $exec);
+        $this->prepExec("INSERT INTO ".$tabela." SET $condicao;", $exec);
 
-        if(DEBUG) 
-           logMsg("Inserido id: ". $this->getCon()->lastInsertId(). " no BD na ". $tabela);
+        if(Config::$log_lvl > 0) logMsg("Inserido id: ". $this->getCon()->lastInsertId(). " no BD na ". $tabela);
 
         return $this->getCon()->lastInsertId();
     }
@@ -54,27 +53,24 @@ class Banco_De_Dados
         $this->prepExec("SELECT $campos FROM $tabela $condicao", $exec);
 
         if($this->query->rowCount() > 0){
-            if(DEBUG)logMsg("Selecionado : ". $this->query->rowCount(). " rows do BD na ". $tabela);
+            if(Config::$log_lvl > 0)logMsg("Selecionado : ". $this->query->rowCount(). " rows do BD na ". $tabela);
             return $this->query;
         }else{
-            if(DEBUG) 
-               logMsg("Selecionado : ". $this->query->rowCount(). " rows do BD na ". $tabela);
-               return array();
+            if(Config::$log_lvl > 0) logMsg("Selecionado : ". $this->query->rowCount(). " rows do BD na ". $tabela);
+            return array();
         }
     }
 
     public function update($tabela, $condicao, $exec){
+        if(Config::$log_lvl > 0) logMsg("Update no BD, tabela: ". $tabela, 1);
+        
         return $this->prepExec("UPDATE $tabela SET $condicao",$exec);
-
-        if(DEBUG) 
-           logMsg("Update no BD, tabela: ". $tabela, 1);
     }
 
     public function delete($tabela, $condicao, $exec){
+        if(Config::$log_lvl > 0) logMsg("Deletado do DB: $tabela onde: $condicao");
+        
         return $this->prepExec("DELETE FROM $tabela WHERE $condicao",$exec);
-
-        if(DEBUG)
-           logMsg("Deletado do DB: $tabela onde: $condicao");
     }
     
     public function callProcedure($nome, $parametros){
